@@ -1,18 +1,24 @@
 document.getElementById('fetch-news').addEventListener('click', fetchNews);
+document.getElementById('toggle-dark-mode').addEventListener('click', toggleDarkMode);
 
 async function fetchNews() {
     const region = document.getElementById('region-select').value;
     const category = document.getElementById('category-select').value;
-    const apiKey = 'a946b8814c534c7ca79eec1ebe74a2a2'; // Replace with your NewsAPI key
+    const searchQuery = document.getElementById('search-input').value;
+    const apiKey = 'a946b8814c534c7ca79eec1ebe74a2a2';
 
     let url = `https://newsapi.org/v2/top-headlines?apiKey=${apiKey}&category=${category}`;
-    
+
     if (region !== 'worldwide') {
         url += `&country=${region}`;
     }
 
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-    
+    if (searchQuery) {
+        url = `https://newsapi.org/v2/everything?apiKey=${apiKey}&q=${searchQuery}&sortBy=publishedAt`;
+    }
+
+    displayLoadingSpinner(true);
+
     try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -22,6 +28,8 @@ async function fetchNews() {
         displayNews(data.articles);
     } catch (error) {
         console.error('Error fetching news:', error);
+    } finally {
+        displayLoadingSpinner(false);
     }
 }
 
@@ -52,4 +60,27 @@ function displayNews(articles) {
 
         newsContainer.appendChild(newsCard);
     });
+
+    applyDarkMode();
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    applyDarkMode();
+}
+
+function applyDarkMode() {
+    const darkModeEnabled = document.body.classList.contains('dark-mode');
+    document.querySelectorAll('.news-card').forEach(card => {
+        if (darkModeEnabled) {
+            card.classList.add('dark-mode');
+        } else {
+            card.classList.remove('dark-mode');
+        }
+    });
+}
+
+function displayLoadingSpinner(show) {
+    const spinner = document.getElementById('loading-spinner');
+    spinner.style.display = show ? 'block' : 'none';
 }
